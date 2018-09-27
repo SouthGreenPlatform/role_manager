@@ -1,0 +1,64 @@
+body {
+	margin:5px;
+/* 	overflow-x:hidden; */
+}
+
+* {
+   font-size:12px;
+/*    line-height:2; */
+}
+
+.margin-left {
+    margin-left:25px; 
+}
+
+.margin-top {  
+    margin-top:20px; 
+}
+
+.margin-top-md {
+    margin-top:8px;
+}
+
+table.adminListTable td, table.adminListTable td * {
+	font-size: 11px;
+}
+
+table.adminListTable {
+	border-left: 1px solid #000000;
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+table.adminListTable tr td,table.adminListTable tr th {
+	border-right: 1px solid #000000;
+	border-bottom: 1px solid #000000;
+	padding: 1px 2px;
+}
+
+table.adminListTable tr th {
+	border-top: 1px solid #000000;
+	background-color: #1d9ce5;
+	color: #fff;
+	text-align:center;
+}
+
+.formErrors {
+	color: red;
+}
+
+a,a:visited {
+	text-decoration: none;
+}
+
+a.linkToExistingPermissions {
+	font-weight:bold;
+}
+
+table#moduleTable input.resetButton, table#moduleTable input.applyButton {
+	padding: 0 5px;
+}
+
+table#moduleTable td {
+	text-align:center
+}

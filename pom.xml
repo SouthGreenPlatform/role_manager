@@ -1,0 +1,228 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.cirad</groupId>
+    <artifactId>role_manager</artifactId>
+    <name>Spring-based role management addon</name>
+    <version>1.0-alpha</version>
+   	<packaging>jar</packaging>
+    
+    <description>
+    </description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <developers>
+        <developer>
+            <name>Guilhem SEMPERE</name>
+        </developer>
+    </developers>
+
+    <dependencies>		
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.jms</groupId>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+		
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>taglibs</groupId>
+            <artifactId>standard</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>4.2.8.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>3.2.6.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jdbc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-tx</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>3.2.6.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aop</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>commons-collections</groupId>
+		  <artifactId>commons-collections</artifactId>
+		  <version>3.1</version>
+		</dependency>
+    </dependencies>
+    
+    <repositories>
+    	<repository>
+	    	<id>ibiblio</id>
+	    	<url>http://maven.ibiblio.org/maven2</url>
+    	</repository>
+    </repositories>
+ 
+    <build>
+<!-- 		<pluginManagement> -->
+<!-- 			<plugins> -->
+<!-- 				<plugin> -->
+<!-- 					<groupId>org.eclipse.m2e</groupId> -->
+<!-- 					<artifactId>lifecycle-mapping</artifactId> -->
+<!-- 					<version>1.0.0</version> -->
+<!-- 					<configuration> -->
+<!-- 						<lifecycleMappingMetadata> -->
+<!-- 							<pluginExecutions> -->
+<!-- 								<pluginExecution> -->
+<!-- 									<pluginExecutionFilter> -->
+<!-- 										<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 										<artifactId>maven-antrun-plugin</artifactId> -->
+<!-- 										<versionRange>[1.8,)</versionRange> -->
+<!-- 										<goals> -->
+<!-- 											<goal>run</goal> -->
+<!-- 										</goals> -->
+<!-- 									</pluginExecutionFilter> -->
+<!-- 									<action> -->
+<!-- 										<ignore /> -->
+<!-- 									</action> -->
+<!-- 								</pluginExecution> -->
+<!-- 							</pluginExecutions> -->
+<!-- 						</lifecycleMappingMetadata> -->
+<!-- 					</configuration> -->
+<!-- 				</plugin> -->
+<!-- 			</plugins> -->
+<!-- 		</pluginManagement> -->
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!-- 
+              Run the ant build task.
+              this generate the .jar file in ${basedir}/jar
+            -->
+<!--             <plugin> -->
+<!--                 <groupId>org.apache.maven.plugins</groupId> -->
+<!--                 <artifactId>maven-antrun-plugin</artifactId> -->
+<!--                 <version>1.8</version> -->
+<!--                 <executions> -->
+<!--                     <execution> -->
+<!--                         <id>compile</id> -->
+<!--                         <phase>compile</phase> -->
+<!--                         <configuration> -->
+<!--                             <target> -->
+<!--                                 <property name="compile_classpath" refid="maven.compile.classpath"/> -->
+<!--                                 <property name="runtime_classpath" refid="maven.runtime.classpath"/> -->
+<!--                                 <property name="test_classpath" refid="maven.test.classpath"/> -->
+<!--                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/> -->
+
+<!--                                 <ant antfile="${basedir}/build.xml"> -->
+<!--                                     <target name="default"/> -->
+<!--                                 </ant> -->
+<!--                             </target> -->
+<!--                         </configuration> -->
+<!--                         <goals> -->
+<!--                             <goal>run</goal> -->
+<!--                         </goals> -->
+<!--                     </execution> -->
+<!--                 </executions> -->
+<!--             </plugin> -->
+            <!-- 
+              copy the generated .jar in /target directory, so it can 
+              be installed by maven
+            -->
+<!--             <plugin> -->
+<!--                 <artifactId>maven-resources-plugin</artifactId> -->
+<!--                 <version>3.0.2</version> -->
+<!--                 <executions> -->
+<!--                     <execution> -->
+<!--                         <id>copy-resources</id> -->
+<!--                         <phase>verify</phase> -->
+<!--                         <goals> -->
+<!--                             <goal>copy-resources</goal> -->
+<!--                         </goals> -->
+<!--                         <configuration> -->
+<!--                             <outputDirectory>${basedir}/target</outputDirectory> -->
+<!--                             <resources>           -->
+<!--                                 <resource> -->
+<!--                                     <directory>${basedir}/jar</directory> -->
+<!--                                 </resource> -->
+<!--                             </resources> -->
+<!--                             <overwrite>true</overwrite>               -->
+<!--                         </configuration>             -->
+<!--                     </execution> -->
+<!--                 </executions> -->
+<!--             </plugin>         -->
+        </plugins>
+		<resources>
+			<resource>
+			<targetPath>META-INF/resources</targetPath>
+			<directory>src/main/webapp</directory>
+			</resource>
+		</resources>
+    </build>
+
+</project>

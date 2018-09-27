@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Role Manager - Generic web tool for managing user roles using Spring Security
+ * Copyright (C) 2018, <CIRAD>
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License, version 3 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ *
+ * See <http://www.gnu.org/licenses/agpl.html> for details about GNU General
+ * Public License V3.
+-->
+<!-- ====================================================================== 
+     Ant Build for storing static resources into META-INF/resources
+     (thus allows using this tool as a webapp plugin)
+     ====================================================================== -->
+
+<project name="role_manager_addon" default="default" basedir=".">
+    <description>
+            Spring-based role management addon - Ant Build for storing static resources into META-INF/resources
+    </description>
+			
+    <!-- ================================= 
+          target: default              
+         ================================= -->
+    <target name="default" description="Creates a jar with static resources in META-INF/resources">
+        <echo message="running ant build (target :: default)"/>
+	    <jar destfile="jar/role_manager-0.0.1-SNAPSHOT.jar">
+	    	<fileset dir="target/classes" includes="**/*.class" />	    	
+	    	<zipfileset dir="src/main/webapp" prefix="META-INF/resources" />
+	    </jar>
+        <echo message="ant build done"/>
+    </target>
+</project>
