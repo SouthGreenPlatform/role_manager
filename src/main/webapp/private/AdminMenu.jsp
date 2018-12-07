@@ -44,9 +44,9 @@
 <div id="leftMenu" class="margin-top margin-left">
 	<p style="font-weight:bold;">
 	</p>
-	<a class="btn btn-sm btn-primary" href="<c:url value="<%= BackOfficeController.moduleListPageURL %>" />" target="managementFrame" onClick="highlightMe(this);">Manage databases</a>
+	<a class="btn btn-sm btn-primary" style="width:130px;" href="<c:url value="<%= BackOfficeController.moduleListPageURL %>" />" target="managementFrame" onClick="highlightMe(this);">Manage databases</a>
 	<br/><br/>
-	<a class="btn btn-sm btn-primary" href="<c:url value="<%= UserPermissionController.userListPageURL %>" />" target="managementFrame" onClick="highlightMe(this);">Set user permissions</a>
+	<a class="btn btn-sm btn-primary" style="width:130px;" href="<c:url value="<%= UserPermissionController.userListPageURL %>" />" target="managementFrame" onClick="highlightMe(this);">Manage users<br/>and permissions</a>
 </div>
 
 </body>
