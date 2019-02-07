@@ -43,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.InMemoryDaoImpl;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import fr.cirad.security.base.IModuleManager;
@@ -56,11 +57,18 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
 
     @Autowired
     private IModuleManager moduleManager;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;	// this may be either a CustomBCryptPasswordEncoder or a NoOpPasswordEncoder
 
     private File m_resourceFile;
     private Properties m_props = null;
 
-    @Override
+    public PasswordEncoder getPasswordEncoder() {
+		return passwordEncoder;
+	}
+
+	@Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
             for (String aUserName : listUsers(false)) {
@@ -77,9 +85,39 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
         return super.loadUserByUsername(username);
     }
 
-    public void setResource(Resource resource) throws IOException {
+    public void setResource(Resource resource) throws Exception {
         m_resourceFile = resource.getFile();
         loadProperties();
+        
+		
+		PasswordEncoder pe = getPasswordEncoder();
+		boolean fBCryptEnabled = pe != null && pe instanceof CustomBCryptPasswordEncoder;
+		if (fBCryptEnabled)
+		{
+			int nConvertedPasswordCount = 0;
+			for (String username : listUsers(false))
+			{
+				UserDetails user = loadUserByUsername(username);
+				String password = user.getPassword();
+				if (nConvertedPasswordCount == 0 && ((CustomBCryptPasswordEncoder) pe).looksLikeBCrypt(password))
+					break;	// all is fine, passwords are encoded
+
+				saveOrUpdateUser(username, password, user.getAuthorities().stream().map(ga -> ga.getAuthority()).toArray(String[]::new), user.isEnabled());
+				nConvertedPasswordCount++;
+			}
+			if (nConvertedPasswordCount > 0)
+				LOG.warn("This is the first time the system starts in the encoded password mode: users.properties file was converted to BCrypt-encoded version. " + nConvertedPasswordCount + " passwords were converted. This is a non-reversible operation.");
+		}
+		else
+			for (String username : listUsers(false))
+			{
+				UserDetails user = loadUserByUsername(username);
+				String password = user.getPassword();
+				if (new CustomBCryptPasswordEncoder().looksLikeBCrypt(password))
+					throw new Exception("It looks like the system was reverted back from encoded to plain password mode. The users.properties file contains BCrypt-encoded passwords which cannot be decoded. This can only be fixed by editing it manually.");
+				else
+					break;
+			}
     }
 
     private Properties loadProperties() throws IOException {
@@ -108,7 +146,7 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
         	props.remove(username);	// we actually want to delete it
         else
 	    {
-	        String sPropValue = password;
+	        String sPropValue = passwordEncoder.encode(password);
 	        for (String authority : grantedAuthorities)
 	            sPropValue += "," + authority;
 	        sPropValue += "," + (enabled ? "enabled" : "disabled");

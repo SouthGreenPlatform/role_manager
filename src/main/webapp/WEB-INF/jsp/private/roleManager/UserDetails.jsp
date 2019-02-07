@@ -116,9 +116,18 @@
 		function resizeIFrame() {
 			$('#permissionFrame').css('height', (document.body.clientHeight - 200)+'px');
 		}
-
+		
 	    $(document).ready(function() {
 	    	resizeIFrame();
+	    	
+    	 	$("input#password").blur(function(e) {
+    	 		var maxLength = 20;
+    		    if (this.value.length > maxLength) {
+    		      e.preventDefault();
+    		      alert("Password length may not exceed " + maxLength +" characters");
+    		      this.value = this.value.substring(0, 20);
+    		    }
+    		});
 	    });
 	    $(window).resize(function() {
 	    	resizeIFrame();
@@ -252,7 +261,7 @@
 	<div style='margin-left:20px; margin-top:10px;'>
 		<p>
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
-			You can modify this user's password by typing a new password here: <input type='password' name="password" style='width:60px;' maxlength='8'>
+			You can modify this user's password by typing a new password here: <input id="password" type='password' name="password" style='width:100px;'> (max-length: 20)
 		</c:if>
 		</p>
 		<table>
@@ -272,26 +281,23 @@
 	</div>
 
 	</form:form>
-
-	<!-- <div style="width:100%;">	 -->
-		<div class="modal fade" tabindex="-1" role="dialog" id="permissionDialog" aria-hidden="true">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header" id="projectInfoContainer">
-						<div id="permissionDialogTitle" style='font-weight:bold; margin-bottom:5px;'></div>
-						<iframe style='margin-bottom:10px; width:100%;' id="permissionFrame" name="permissionFrame"></iframe>
-						<br>
-						<form>
-							<input type='button' class='btn btn-sm btn-primary' value='Apply' id="applyButton" onclick="storePermissions();">
-							&nbsp;&nbsp;&nbsp;
-							<input type='button' class='btn btn-sm btn-primary' value='Cancel' id="hlContentDialogClose" onclick="$('#permissionDialog').modal('hide');">
-						</form>
-					</div>
+	
+	<div class="modal fade" tabindex="-1" role="dialog" id="permissionDialog" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header" id="projectInfoContainer">
+					<div id="permissionDialogTitle" style='font-weight:bold; margin-bottom:5px;'></div>
+					<iframe style='margin-bottom:10px; width:100%;' id="permissionFrame" name="permissionFrame"></iframe>
+					<br>
+					<form>
+						<input type='button' class='btn btn-sm btn-primary' value='Apply' id="applyButton" onclick="storePermissions();">
+						&nbsp;&nbsp;&nbsp;
+						<input type='button' class='btn btn-sm btn-primary' value='Cancel' id="hlContentDialogClose" onclick="$('#permissionDialog').modal('hide');">
+					</form>
 				</div>
 			</div>
 		</div>
-	<!-- </div> -->
-
+	</div>
 </body>
 
 </html>
