@@ -146,7 +146,7 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
         	props.remove(username);	// we actually want to delete it
         else
 	    {
-	        String sPropValue = passwordEncoder.encode(password);
+        	String sPropValue = (passwordEncoder instanceof CustomBCryptPasswordEncoder && !((CustomBCryptPasswordEncoder) passwordEncoder).looksLikeBCrypt(password)) ? passwordEncoder.encode(password) : password;
 	        for (String authority : grantedAuthorities)
 	            sPropValue += "," + authority;
 	        sPropValue += "," + (enabled ? "enabled" : "disabled");

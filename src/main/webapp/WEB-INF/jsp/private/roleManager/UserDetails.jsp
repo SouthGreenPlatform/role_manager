@@ -158,7 +158,7 @@
 			<span style='margin-left:100px;' id="cloneButtonSpan"></span>
 		</c:when>
 		<c:otherwise>
-			<form:input path="username" />
+			<form:input path="username" autocomplete="off"/>
 		</c:otherwise>
 	</c:choose>
 	</div>
@@ -261,7 +261,7 @@
 	<div style='margin-left:20px; margin-top:10px;'>
 		<p>
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
-			You can modify this user's password by typing a new password here: <input id="password" type='password' name="password" style='width:100px;'> (max-length: 20)
+			You can modify this user's password by typing a new password here: <input id="password" type='password' name="password" style='width:100px;' autocomplete="off"> (max-length: 20)
 		</c:if>
 		</p>
 		<table>
