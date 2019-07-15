@@ -64,11 +64,12 @@
 
 <body style='background-color:#f0f0f0; text-align:center;' onload="doOnLoad('${urlEncoder.urlEncode(param.module)}');">
 	<form>
-		<table cellpadding='4' cellspacing='0' border='0'>
+		<table cellpadding='4' cellspacing='0' border='0' class="margin-top-sm">
 		  <tr>
 		    <td width='5'>&nbsp;</td>
 			<th valign='top'>
-			  <table cellpadding='2' cellspacing='0' class='adminListTable margin-top-md'>
+			  Public ${param.entityType} entities
+			  <table cellpadding='2' cellspacing='0' class='adminListTable margin-top-sm'>
 				<tr>
 					<th>${param.entityType} name</th>
 					<th>${param.entityType} permissions</th>
@@ -93,9 +94,10 @@
 			  </table>
 			</th>
 			<c:if test="${privateEntities ne null}">
+		    <td width='20'>&nbsp;</td>
 			<th valign='top'>
 			  Private ${param.entityType} entities
-			  <table cellpadding='2' cellspacing='0' class='adminListTable'>
+			  <table cellpadding='2' cellspacing='0' class='adminListTable margin-top-sm'>
 				<tr>
 					<th>${param.entityType} name</th>
 					<th>${param.entityType} permissions</th>

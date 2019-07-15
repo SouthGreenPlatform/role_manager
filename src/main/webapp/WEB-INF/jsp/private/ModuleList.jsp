@@ -38,7 +38,7 @@
 			let itemRow = $("#row_" + moduleName);
 			$.getJSON('<c:url value="<%= BackOfficeController.moduleCreationURL %>" />', { module:moduleName,host:host }, function(created){
 				if (!created)
-					alert("Unable create " + moduleName);
+					alert("Unable to create " + moduleName);
 				else
 				{
 					$("#newModuleName").val("");
