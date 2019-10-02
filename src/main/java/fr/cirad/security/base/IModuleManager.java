@@ -16,6 +16,7 @@
  *******************************************************************************/
 package fr.cirad.security.base;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -52,8 +53,9 @@ public interface IModuleManager {
 	 * @param sModule
 	 * @param fAlsoDropDatabase
 	 * @return whether or not module removal succeeded
+	 * @throws IOException 
 	 */
-	boolean removeDataSource(String sModule, boolean fAlsoDropDatabase);
+	boolean removeDataSource(String sModule, boolean fAlsoDropDatabase) throws IOException;
 	
 	/**
 	 * @param sModule
