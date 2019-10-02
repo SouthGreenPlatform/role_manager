@@ -40,15 +40,36 @@
 		if (confirm("Do you really want to discard ${param.entityType} " + entityName + "?\nThis will delete all data it contains."))
 		{
 			itemRow.find("td:eq(2)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
-			$.getJSON('<c:url value="<%= BackOfficeController.moduleEntityRemovalURL %>" />', { module:'${param.module}', entityType:'${param.entityType}', entityId:entityId }, function(deleted){
-				itemRow.find("td:eq(2) div").remove();
-				if (!deleted)
-					alert("Unable to discard " + entityName);
-				else
-					itemRow.remove();
+		    $.ajax({
+		        	url: '<c:url value="<%= BackOfficeController.moduleEntityRemovalURL %>" />',
+		        	data : { module:'${param.module}', entityType:'${param.entityType}', entityId:entityId },
+		        	success: function(deleted) {
+						itemRow.find("td:eq(2) div").remove();
+						if (!deleted)
+							alert("Unable to discard " + entityName);
+						else
+							itemRow.remove();
+		        	},
+			        error: function (xhr, ajaxOptions, thrownError) {
+			            handleError(xhr, ajaxOptions, thrownError);
+			            location.reload();
+			        }
 			});
 		}
 	}
+	
+    function handleError(xhr) {
+      	var errorMsg;
+      	if (xhr != null && xhr.responseText != null) {
+      		try {
+      			errorMsg = $.parseJSON(xhr.responseText)['errorMsg'];
+      		}
+      		catch (err) {
+      			errorMsg = xhr.responseText;
+      		}
+      	}
+      	alert(errorMsg);
+      }
 
 	function toggleVisibility(entityId, entityName)
 	{
