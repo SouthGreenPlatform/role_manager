@@ -17,15 +17,19 @@
 package fr.cirad.web.controller;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
@@ -70,7 +74,7 @@ public class BackOfficeController {
 
 	@Autowired private IModuleManager moduleManager;
 	@Autowired private ReloadableInMemoryDaoImpl userDao;
-
+	
 	@RequestMapping(mainPageURL)
 	protected ModelAndView mainPage(HttpSession session) throws Exception
 	{
@@ -135,7 +139,7 @@ public class BackOfficeController {
 
 	@PreAuthorize("hasRole(IRoleDefinition.ROLE_ADMIN)")
     @RequestMapping(hostListURL)
-	protected @ResponseBody Collection<String> getHostList(HttpServletRequest request, HttpServletResponse resp) throws IOException {
+	protected @ResponseBody Collection<String> getHostList() throws IOException {
     	return moduleManager.getHosts();
     }
 
@@ -211,4 +215,39 @@ public class BackOfficeController {
 //
 //		return authorisedModules;
 //    }
+
+	public static String determinePublicHostName(HttpServletRequest request) throws UnknownHostException, SocketException {
+		int nPort = request.getServerPort();
+		String sHostName = request.getHeader("X-Forwarded-Server"); // in case the app is running behind a proxy
+		if (sHostName == null)
+		{
+			sHostName = request.getServerName();
+			if ("localhost".equalsIgnoreCase(sHostName) || "127.0.0.1".equals(sHostName)) // we need a *real* address for the cluster to be able to pick up input files
+			{
+		        Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+		        mainLoop : for (; niEnum.hasMoreElements();)
+		        {
+	                NetworkInterface ni = niEnum.nextElement();
+	                Enumeration<InetAddress> a = ni.getInetAddresses();
+	                for (; a.hasMoreElements();)
+	                {
+                        InetAddress addr = a.nextElement();
+//                        LOG.debug("address found for local machine: " + addr);
+                        String hostAddress = addr.getHostAddress().replaceAll("/", "");
+                        if (!hostAddress.startsWith("127.0.") && hostAddress.split("\\.").length >= 4)
+                        {
+                        	sHostName = hostAddress;
+                        	if (!addr.isSiteLocalAddress() && !ni.getDisplayName().toLowerCase().startsWith("wlan"))
+                        		break mainLoop;	// otherwise we will keep searching in case we find an ethernet network
+                        }
+	                }
+		        }
+		        if (sHostName == null)
+		        	LOG.error("Unable to convert local address to internet IP");
+		    }
+			sHostName += nPort != 80 ? ":" + nPort : "";
+		}
+		LOG.debug("returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
+		return "http" + (request.isSecure() ? "s" : "") + "://" + sHostName;
+	}
 }
