@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -224,24 +225,17 @@ public class BackOfficeController {
 			sHostName = request.getServerName();
 			if ("localhost".equalsIgnoreCase(sHostName) || "127.0.0.1".equals(sHostName)) // we need a *real* address for the cluster to be able to pick up input files
 			{
-		        Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
-		        mainLoop : for (; niEnum.hasMoreElements();)
-		        {
-	                NetworkInterface ni = niEnum.nextElement();
-	                Enumeration<InetAddress> a = ni.getInetAddresses();
-	                for (; a.hasMoreElements();)
-	                {
-                        InetAddress addr = a.nextElement();
-//                        LOG.debug("address found for local machine: " + addr);
-                        String hostAddress = addr.getHostAddress().replaceAll("/", "");
-                        if (!hostAddress.startsWith("127.0.") && hostAddress.split("\\.").length >= 4)
-                        {
-                        	sHostName = hostAddress;
-                        	if (!addr.isSiteLocalAddress() && !ni.getDisplayName().toLowerCase().startsWith("wlan"))
-                        		break mainLoop;	// otherwise we will keep searching in case we find an ethernet network
-                        }
-	                }
-		        }
+				HashMap<InetAddress, String> inetAddressesWithInterfaceNames = getInetAddressesWithInterfaceNames();
+                for (InetAddress addr : inetAddressesWithInterfaceNames.keySet()) {
+                    LOG.debug("address found for local machine: " + addr);
+                    String hostAddress = addr.getHostAddress().replaceAll("/", "");
+                    if (!hostAddress.startsWith("127.0.") && hostAddress.split("\\.").length >= 4)
+                    {
+                    	sHostName = hostAddress;
+                    	if (!addr.isSiteLocalAddress() && !inetAddressesWithInterfaceNames.get(addr).toLowerCase().startsWith("wl"))
+                   			break;	// otherwise we will keep searching in case we find an ethernet network
+                    }
+                }
 		        if (sHostName == null)
 		        	LOG.error("Unable to convert local address to internet IP");
 		    }
@@ -249,5 +243,18 @@ public class BackOfficeController {
 		}
 		LOG.debug("returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
 		return "http" + (request.isSecure() ? "s" : "") + "://" + sHostName;
+	}
+
+	public static HashMap<InetAddress, String> getInetAddressesWithInterfaceNames() throws SocketException {
+		HashMap<InetAddress, String> result = new HashMap<>();
+		Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+        for (; niEnum.hasMoreElements();)
+        {
+            NetworkInterface ni = niEnum.nextElement();
+            Enumeration<InetAddress> a = ni.getInetAddresses();
+            for (; a.hasMoreElements();)
+            	result.put(a.nextElement(), ni.getDisplayName());
+        }
+		return result;
 	}
 }
