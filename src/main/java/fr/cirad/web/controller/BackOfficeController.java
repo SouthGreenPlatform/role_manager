@@ -241,7 +241,7 @@ public class BackOfficeController {
 		    }
 			sHostName += nPort != 80 ? ":" + nPort : "";
 		}
-		LOG.debug("returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
+		LOG.debug("determinePublicHostName returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
 		return "http" + (request.isSecure() ? "s" : "") + "://" + sHostName;
 	}
 
