@@ -51,7 +51,8 @@
 		function removeItem(moduleName)
 		{
 			let itemRow = $("#row_" + moduleName);
-			if (confirm("Do you really want to discard database " + moduleName + "?\nThis will delete all data it contains."))
+			if (confirm("Do you really want to discard database " + moduleName + "?\nThis will delete all data it contains.")) {
+				itemRow.find("td:eq(5)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
 				$.getJSON('<c:url value="<%= BackOfficeController.moduleRemovalURL %>" />', { module:moduleName }, function(deleted){
 					if (!deleted)
 						alert("Unable to discard " + moduleName);
@@ -61,6 +62,7 @@
 						itemRow.remove();
 					}
 				});
+			}
 		}
 
 		function saveChanges(moduleName)
