@@ -42,10 +42,32 @@
 				else
 				{
 					$("#newModuleName").val("");
+					$("#newModuleName").keyup();
 					moduleData[moduleName] = [false, false];
 					$('#moduleTable tbody').prepend(buildRow(moduleName));
 				}
-			});
+			}).error(function(xhr) { handleError(xhr); });
+		}
+		
+		function handleError(xhr) {
+			if (!xhr.getAllResponseHeaders())
+				return;	// user is probably leaving the current page
+			
+		    if (xhr.status == 403) {
+		        alert("You do not have access to this resource");
+		        return;
+		    }
+
+		  	var errorMsg;
+		  	if (xhr != null && xhr.responseText != null) {
+		  		try {
+		  			errorMsg = $.parseJSON(xhr.responseText)['errorMsg'];
+		  		}
+		  		catch (err) {
+		  			errorMsg = xhr.responseText;
+		  		}
+		  	}
+		  	alert(errorMsg);
 		}
 		
 		function removeItem(moduleName)
@@ -54,14 +76,16 @@
 			if (confirm("Do you really want to discard database " + moduleName + "?\nThis will delete all data it contains.")) {
 				itemRow.find("td:eq(5)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
 				$.getJSON('<c:url value="<%= BackOfficeController.moduleRemovalURL %>" />', { module:moduleName }, function(deleted){
-					if (!deleted)
+					if (!deleted) {
 						alert("Unable to discard " + moduleName);
+						itemRow.find("td:eq(5) div").remove();
+					}
 					else
 					{
 						delete moduleData[moduleName];
 						itemRow.remove();
 					}
-				});
+				}).error(function(xhr) { itemRow.find("td:eq(5) div").remove(); handleError(xhr); });
 			}
 		}
 
@@ -79,7 +103,7 @@
 					moduleData[moduleName][1] = setToHidden;
 					setDirty(moduleName, false);
 				}
-			});
+			}).error(function(xhr) { handleError(xhr); });
 		}
 		
 		function resetFlags(moduleName)
