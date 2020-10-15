@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -217,33 +216,37 @@ public class BackOfficeController {
 //		return authorisedModules;
 //    }
 
-	public static String determinePublicHostName(HttpServletRequest request) throws UnknownHostException, SocketException {
+	public static String determinePublicHostName(HttpServletRequest request) throws SocketException, UnknownHostException {
 		int nPort = request.getServerPort();
 		String sHostName = request.getHeader("X-Forwarded-Server"); // in case the app is running behind a proxy
 		if (sHostName == null)
 		{
 			sHostName = request.getServerName();
 			if ("localhost".equalsIgnoreCase(sHostName) || "127.0.0.1".equals(sHostName)) // we need a *real* address for the cluster to be able to pick up input files
-			{
-				HashMap<InetAddress, String> inetAddressesWithInterfaceNames = getInetAddressesWithInterfaceNames();
-                for (InetAddress addr : inetAddressesWithInterfaceNames.keySet()) {
-                    LOG.debug("address found for local machine: " + addr);
-                    String hostAddress = addr.getHostAddress().replaceAll("/", "");
-                    if (!hostAddress.startsWith("127.0.") && hostAddress.split("\\.").length >= 4)
-                    {
-                    	sHostName = hostAddress;
-                    	if (!addr.isSiteLocalAddress() && !inetAddressesWithInterfaceNames.get(addr).toLowerCase().startsWith("wl"))
-                   			break;	// otherwise we will keep searching in case we find an ethernet network
-                    }
-                }
-		        if (sHostName == null)
-		        	LOG.error("Unable to convert local address to internet IP");
-		    }
+				sHostName = tryAndFindVisibleIp(request);
 			sHostName += nPort != 80 ? ":" + nPort : "";
 		}
 		LOG.debug("determinePublicHostName returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
 		return "http" + (request.isSecure() ? "s" : "") + "://" + sHostName;
 	}
+
+	private static String tryAndFindVisibleIp(HttpServletRequest request) throws SocketException, UnknownHostException {
+		String sHostName = null;
+		HashMap<InetAddress, String> inetAddressesWithInterfaceNames = getInetAddressesWithInterfaceNames();
+        for (InetAddress addr : inetAddressesWithInterfaceNames.keySet()) {
+            LOG.debug("address found for local machine: " + addr /*+ " / " + addr.isAnyLocalAddress() + " / " + addr.isLinkLocalAddress() + " / " + addr.isLoopbackAddress() + " / " + addr.isMCLinkLocal() + " / " + addr.isMCNodeLocal() + " / " + addr.isMCOrgLocal() + " / " + addr.isMCSiteLocal() + " / " + addr.isMulticastAddress() + " / " + addr.isSiteLocalAddress() + " / " + addr.isMCGlobal()*/);
+            String hostAddress = addr.getHostAddress().replaceAll("/", "");
+            if (!hostAddress.startsWith("127.0.") && hostAddress.split("\\.").length >= 4)
+            {
+            	sHostName = hostAddress;
+            	if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress() && !addr.isSiteLocalAddress() && !inetAddressesWithInterfaceNames.get(addr).toLowerCase().startsWith("wl"))
+           			break;	// otherwise we will keep searching in case we find an ethernet network
+            }
+        }
+        if (sHostName == null)
+        	throw new UnknownHostException("Unable to convert local address to visible IP");
+        return sHostName;
+    }
 
 	public static HashMap<InetAddress, String> getInetAddressesWithInterfaceNames() throws SocketException {
 		HashMap<InetAddress, String> result = new HashMap<>();
