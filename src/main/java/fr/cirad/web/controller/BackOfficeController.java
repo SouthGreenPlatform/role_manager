@@ -59,6 +59,10 @@ public class BackOfficeController {
 	
 	static final public String FRONTEND_URL = "private";
 
+	static final public String DTO_FIELDNAME_HOST = "host";
+	static final public String DTO_FIELDNAME_PUBLIC = "public";
+	static final public String DTO_FIELDNAME_HIDDEN = "hidden";
+	
 	static final public String mainPageURL = "/" + FRONTEND_URL + "/main.do_";
 	static final public String homePageURL = "/" + FRONTEND_URL + "/home.do_";
 	static final public String topFrameURL = "/" + FRONTEND_URL + "/topBanner.do_";
@@ -144,7 +148,7 @@ public class BackOfficeController {
     }
 
 	@RequestMapping(moduleListDataURL)
-	protected @ResponseBody Map<String, Boolean[]> listModules() throws Exception
+	protected @ResponseBody Map<String, Map<String, Comparable>> listModules() throws Exception
 	{
 		Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
 		Collection<String> modulesToManage;
@@ -153,13 +157,19 @@ public class BackOfficeController {
 		else
 			modulesToManage = userDao.getManagedEntitiesByModuleAndType(authToken.getAuthorities()).keySet();
 
+		Map<String, Map<String, Comparable>> result = new TreeMap<>();
+		
 		Collection<String> publicModules = moduleManager.getModules(true);
-		Map<String, Boolean[]> result = new TreeMap<>();
-		for (String module : modulesToManage)
-			result.put(module, new Boolean[] {publicModules.contains(module), moduleManager.isModuleHidden(module)});
+		for (String module : modulesToManage) {
+			Map<String, Comparable> aModuleEntry = new HashMap<>();
+			aModuleEntry.put(DTO_FIELDNAME_HOST, moduleManager.getModuleHost(module));
+			aModuleEntry.put(DTO_FIELDNAME_PUBLIC, publicModules.contains(module));
+			aModuleEntry.put(DTO_FIELDNAME_HIDDEN, moduleManager.isModuleHidden(module));
+			result.put(module, aModuleEntry);
+		}
 		return result;
 	}
-	
+
 	@RequestMapping(moduleVisibilityURL)
 	@PreAuthorize("hasRole(IRoleDefinition.ROLE_ADMIN)")
 	protected @ResponseBody boolean modifyModuleVisibility(@RequestParam("module") String sModule, @RequestParam("public") boolean fPublic, @RequestParam("hidden") boolean fHidden) throws Exception

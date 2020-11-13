@@ -5,7 +5,7 @@
     <groupId>fr.cirad</groupId>
     <artifactId>role_manager</artifactId>
     <name>Spring-based role management addon</name>
-    <version>1.1.1-RELEASE</version>
+    <version>1.1.2-RELEASE</version>
    	<packaging>jar</packaging>
     
     <description>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>4.2.8.RELEASE</version>
+            <version>5.2.10.RELEASE</version>
         </dependency>
 
         <dependency>

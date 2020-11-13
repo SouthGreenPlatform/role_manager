@@ -106,8 +106,14 @@ public interface IModuleManager {
 	 * @param sEntityType
 	 * @param entityId
 	 * @param fPublic
-	 * @return where or not setting entity visibility succeeded
+	 * @return whether or not setting entity visibility succeeded
 	 * @throws Exception
 	 */
 	boolean setManagedEntityVisibility(String sModule, String sEntityType, Comparable entityId, boolean fPublic) throws Exception;
+
+	/**
+	 * @param sModule
+	 * @return name of the host this module's data is stored on
+	 */
+	String getModuleHost(String sModule);
 }

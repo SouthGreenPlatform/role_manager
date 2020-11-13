@@ -43,7 +43,10 @@
 				{
 					$("#newModuleName").val("");
 					$("#newModuleName").keyup();
-					moduleData[moduleName] = [false, false];
+					moduleData[moduleName] = {	'<%= BackOfficeController.DTO_FIELDNAME_HOST %>' : $("select#hosts").val(),
+												'<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>' : false,
+												'<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>' : false
+					}
 					$('#moduleTable tbody').prepend(buildRow(moduleName));
 				}
 			}).error(function(xhr) { handleError(xhr); });
@@ -74,26 +77,26 @@
 		{
 			let itemRow = $("#row_" + moduleName);
 			if (confirm("Do you really want to discard database " + moduleName + "?\nThis will delete all data it contains.")) {
-				itemRow.find("td:eq(5)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
+				itemRow.find("td:eq(6)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
 				$.getJSON('<c:url value="<%= BackOfficeController.moduleRemovalURL %>" />', { module:moduleName }, function(deleted){
 					if (!deleted) {
 						alert("Unable to discard " + moduleName);
-						itemRow.find("td:eq(5) div").remove();
+						itemRow.find("td:eq(6) div").remove();
 					}
 					else
 					{
 						delete moduleData[moduleName];
 						itemRow.remove();
 					}
-				}).error(function(xhr) { itemRow.find("td:eq(5) div").remove(); handleError(xhr); });
+				}).error(function(xhr) { itemRow.find("td:eq(6) div").remove(); handleError(xhr); });
 			}
 		}
 
 		function saveChanges(moduleName)
 		{
 			let itemRow = $("#row_" + moduleName);
-			let setToPublic = itemRow.find(".flagCol0").prop("checked");
-			let setToHidden = itemRow.find(".flagCol1").prop("checked");
+			let setToPublic = itemRow.find(".flagCol1").prop("checked");
+			let setToHidden = itemRow.find(".flagCol2").prop("checked");
 			$.getJSON('<c:url value="<%= BackOfficeController.moduleVisibilityURL %>" />', { module:moduleName,public:setToPublic,hidden:setToHidden }, function(updated){
 				if (!updated)
 					alert("Unable to apply changes for " + moduleName);
@@ -109,8 +112,8 @@
 		function resetFlags(moduleName)
 		{
 			let itemRow = $("#row_" + moduleName);
-			itemRow.find(".flagCol0").prop("checked", moduleData[moduleName][0]);
-			itemRow.find(".flagCol1").prop("checked", moduleData[moduleName][1]);
+			itemRow.find(".flagCol1").prop("checked", moduleData[moduleName][0]);
+			itemRow.find(".flagCol2").prop("checked", moduleData[moduleName][1]);
 			setDirty(moduleName, false);
 		}
 		
@@ -129,9 +132,11 @@
 		   	let rowContents = "<td>" + key + "</td>";
 		   	
 		   	<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
-	   		if (moduleData[key] != null)
-			   	for (var subkey in moduleData[key])
-					rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='flagCol" + subkey + "' type='checkbox'" + (moduleData[key][subkey] ? " checked" : "") + "></td>";
+	   		if (moduleData[key] != null) {
+	   			rowContents += "<td>" + moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_HOST %>'] + "</td>";
+				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='flagCol1' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>'] ? " checked" : "") + "></td>";
+				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='flagCol2' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>'] ? " checked" : "") + "></td>";
+			}
 			</c:if>
 
 			rowContents += "<td>";
@@ -218,8 +223,9 @@
 	<tr>
 		<th>Database name</th>
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
-		<th>Public</th>
-		<th>Hidden</th>
+		<th style="text-transform:capitalize;"><%= BackOfficeController.DTO_FIELDNAME_HOST %></th>
+		<th style="text-transform:capitalize;"><%= BackOfficeController.DTO_FIELDNAME_PUBLIC %></th>
+		<th style="text-transform:capitalize;"><%= BackOfficeController.DTO_FIELDNAME_HIDDEN %></th>
 		</c:if>
 		<th>Entity management</th>
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
