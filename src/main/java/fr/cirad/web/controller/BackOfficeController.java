@@ -229,7 +229,6 @@ public class BackOfficeController {
 	public static String determinePublicHostName(HttpServletRequest request) throws SocketException, UnknownHostException {
 		int nPort = request.getServerPort();
 		String sHostName = request.getHeader("X-Forwarded-Server"); // in case the app is running behind a proxy
-		LOG.info(sHostName + " / " + request.getHeader("referer"));
 		if (sHostName == null)
 			sHostName = request.getServerName();
 	
