@@ -229,15 +229,26 @@ public class BackOfficeController {
 	public static String determinePublicHostName(HttpServletRequest request) throws SocketException, UnknownHostException {
 		int nPort = request.getServerPort();
 		String sHostName = request.getHeader("X-Forwarded-Server"); // in case the app is running behind a proxy
+		LOG.info(sHostName + " / " + request.getHeader("referer"));
 		if (sHostName == null)
-		{
 			sHostName = request.getServerName();
-			if ("localhost".equalsIgnoreCase(sHostName) || "127.0.0.1".equals(sHostName)) // we need a *real* address for the cluster to be able to pick up input files
-				sHostName = tryAndFindVisibleIp(request);
-			sHostName += nPort != 80 ? ":" + nPort : "";
+	
+		// see if we can get this from the referer
+		String sReferer = request.getHeader("referer");
+		if (sReferer != null) {
+			int nPos = sReferer.indexOf("://" + sHostName + request.getContextPath() + "/");
+			if (nPos != -1) {
+				sHostName = sReferer.substring(0, nPos) + "://" + sHostName;
+				LOG.debug("From referer header, determinePublicHostName is returning " + sHostName);
+				return sHostName;
+			}
 		}
-		LOG.debug("determinePublicHostName returning http" + (request.isSecure() ? "s" : "") + "://" + sHostName);
-		return "http" + (request.isSecure() ? "s" : "") + "://" + sHostName;
+
+		if ("localhost".equalsIgnoreCase(sHostName) || "127.0.0.1".equals(sHostName)) // we need a *real* address for remote applications to be able to reach us
+			sHostName = tryAndFindVisibleIp(request);
+		sHostName = "http" + (request.isSecure() ? "s" : "") + "://" + sHostName + (nPort != 80 ? ":" + nPort : "");
+		LOG.debug("After scanning network interfaces, determinePublicHostName is returning " + sHostName);
+		return sHostName;
 	}
 
 	private static String tryAndFindVisibleIp(HttpServletRequest request) throws SocketException, UnknownHostException {
