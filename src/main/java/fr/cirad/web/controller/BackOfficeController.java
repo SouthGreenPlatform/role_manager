@@ -66,11 +66,12 @@ public class BackOfficeController {
 	static final public String mainPageURL = "/" + FRONTEND_URL + "/main.do_";
 	static final public String homePageURL = "/" + FRONTEND_URL + "/home.do_";
 	static final public String topFrameURL = "/" + FRONTEND_URL + "/topBanner.do_";
+	static final public String moduleFieldsURL = "/" + FRONTEND_URL + "/moduleFields.json_";
 	static final public String moduleListPageURL = "/" + FRONTEND_URL + "/ModuleList.do_";
 	static final public String moduleListDataURL = "/" + FRONTEND_URL + "/listModules.json_";
 	static final public String moduleRemovalURL = "/" + FRONTEND_URL + "/removeModule.json_";
 	static final public String moduleCreationURL = "/" + FRONTEND_URL + "/createModule.json_";
-	static final public String moduleVisibilityURL = "/" + FRONTEND_URL + "/moduleVisibility.json_";
+	static final public String moduleFieldModificationURL = "/" + FRONTEND_URL + "/moduleFieldModification.json_";
 	static final public String moduleContentPageURL = "/" + FRONTEND_URL + "/ModuleContents.do_";
 	static final public String moduleEntityRemovalURL = "/" + FRONTEND_URL + "/removeModuleEntity.json_";
 	static final public String moduleEntityVisibilityURL = "/" + FRONTEND_URL + "/entityVisibility.json_";
@@ -127,8 +128,12 @@ public class BackOfficeController {
 		boolean fVisibilitySupported = moduleManager.doesEntityTypeSupportVisibility(module, entityType);
 		model.addAttribute("visibilitySupported", fVisibilitySupported);
 		Map<Comparable, String> publicEntities = moduleManager.getEntitiesByModule(entityType, fVisibilitySupported ? true : null).get(module);
+		if (publicEntities == null)
+			publicEntities = new HashMap<>();
 		Map<Comparable, String> privateEntities = fVisibilitySupported ? moduleManager.getEntitiesByModule(entityType, false).get(module) : new HashMap<>();
-
+		if (privateEntities == null)
+			privateEntities = new HashMap<>();
+		
 		Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
 		Collection<Comparable> allowedEntities = authToken.getAuthorities().contains(new GrantedAuthorityImpl(IRoleDefinition.ROLE_ADMIN)) ? null : userDao.getManagedEntitiesByModuleAndType(authToken.getAuthorities()).get(module).get(entityType);
 		for (Map<Comparable, String> entityMap : Arrays.asList(publicEntities, privateEntities))
@@ -148,33 +153,47 @@ public class BackOfficeController {
     }
 
 	@RequestMapping(moduleListDataURL)
-	protected @ResponseBody Map<String, Map<String, Comparable>> listModules() throws Exception
+	protected @ResponseBody Collection<Object> listModules() throws Exception
 	{
 		Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
-		Collection<String> modulesToManage;
+//		Collection<Object> modulesToManage;
 		if (authToken.getAuthorities().contains(new GrantedAuthorityImpl(IRoleDefinition.ROLE_ADMIN)))
-			modulesToManage = moduleManager.getModules(null);
-		else
-			modulesToManage = userDao.getManagedEntitiesByModuleAndType(authToken.getAuthorities()).keySet();
-
-		Map<String, Map<String, Comparable>> result = new TreeMap<>();
-		
-		Collection<String> publicModules = moduleManager.getModules(true);
-		for (String module : modulesToManage) {
-			Map<String, Comparable> aModuleEntry = new HashMap<>();
-			aModuleEntry.put(DTO_FIELDNAME_HOST, moduleManager.getModuleHost(module));
-			aModuleEntry.put(DTO_FIELDNAME_PUBLIC, publicModules.contains(module));
-			aModuleEntry.put(DTO_FIELDNAME_HIDDEN, moduleManager.isModuleHidden(module));
-			result.put(module, aModuleEntry);
+			return moduleManager.getModulesByVisibility(null);
+		else {
+			Collection<String> moduleNamesToManage = userDao.getManagedEntitiesByModuleAndType(authToken.getAuthorities()).keySet();
+			return moduleManager.getModulesByNames(moduleNamesToManage);
 		}
-		return result;
+
+//		Map<String, Map<String, Comparable>> result = new TreeMap<>();
+//		
+//		Collection<Object> publicModules = moduleManager.getModulesByVisibility(true);
+//		for (String module : modulesToManage) {
+//			Map<String, Comparable> aModuleEntry = new HashMap<>();
+//			aModuleEntry.put(DTO_FIELDNAME_HOST, moduleManager.getModuleHost(module));
+//			aModuleEntry.put(DTO_FIELDNAME_PUBLIC, publicModules.contains(module));
+//			aModuleEntry.put(DTO_FIELDNAME_HIDDEN, moduleManager.isModuleHidden(module));
+//			for (String field : getEditableModuleFields().keySet())
+//				aModuleEntry.put(field, publicModules.contains(module));
+//			result.put(module, aModuleEntry);
+//		}
+//		return result;
+	}
+	
+	@RequestMapping(moduleFieldsURL)
+	@PreAuthorize("hasRole(IRoleDefinition.ROLE_ADMIN)")
+	protected @ResponseBody Map<String, String> getEditableModuleFields() throws Exception
+	{
+		return moduleManager.getEditableModuleFields();
 	}
 
-	@RequestMapping(moduleVisibilityURL)
+	@RequestMapping(moduleFieldModificationURL)
 	@PreAuthorize("hasRole(IRoleDefinition.ROLE_ADMIN)")
-	protected @ResponseBody boolean modifyModuleVisibility(@RequestParam("module") String sModule, @RequestParam("public") boolean fPublic, @RequestParam("hidden") boolean fHidden) throws Exception
+	protected @ResponseBody boolean modifyModuleFields(HttpServletRequest request, @RequestParam("module") String sModule, @RequestParam("public") boolean fPublic, @RequestParam("hidden") boolean fHidden) throws Exception
 	{
-		return moduleManager.updateDataSource(sModule, fPublic, fHidden, null);
+		HashMap<String, Object> editableFieldValues = new HashMap<>();
+		for (String field : getEditableModuleFields().keySet())
+			editableFieldValues.put(field, request.getParameter(field));
+		return moduleManager.updateDataSource(sModule, fPublic, fHidden, editableFieldValues);
 	}
 	
 	@RequestMapping(moduleCreationURL)

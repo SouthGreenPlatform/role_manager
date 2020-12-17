@@ -30,7 +30,7 @@
 	<script type="text/javascript" src="js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 	<script type="text/javascript">
-		var moduleData;
+		var moduleData, editableFields;
 		
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
 		function createModule(moduleName, host)
@@ -43,11 +43,12 @@
 				{
 					$("#newModuleName").val("");
 					$("#newModuleName").keyup();
-					moduleData[moduleName] = {	'<%= BackOfficeController.DTO_FIELDNAME_HOST %>' : $("select#hosts").val(),
-												'<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>' : false,
-												'<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>' : false
+					moduleData[moduleData.length] = {	id:moduleName,
+														'<%= BackOfficeController.DTO_FIELDNAME_HOST %>' : $("select#hosts").val(),
+														'<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>' : false,
+														'<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>' : false
 					}
-					$('#moduleTable tbody').prepend(buildRow(moduleName));
+					$('#moduleTable tbody').prepend(buildRow(moduleData.length - 1));
 				}
 			}).error(function(xhr) { handleError(xhr); });
 		}
@@ -73,9 +74,10 @@
 		  	alert(errorMsg);
 		}
 		
-		function removeItem(moduleName)
+		function removeItem(rowId)
 		{
-			let itemRow = $("#row_" + moduleName);
+			let itemRow = $("#row_" + rowId);
+			let moduleName = itemRow.find("td:eq(0)").text();
 			if (confirm("Do you really want to discard database " + moduleName + "?\nThis will delete all data it contains.")) {
 				itemRow.find("td:eq(6)").prepend("<div style='position:absolute; margin-left:60px; margin-top:5px;'><img src='img/progress.gif'></div>");
 				$.getJSON('<c:url value="<%= BackOfficeController.moduleRemovalURL %>" />', { module:moduleName }, function(deleted){
@@ -92,35 +94,44 @@
 			}
 		}
 
-		function saveChanges(moduleName)
+		function saveChanges(rowId)
 		{
-			let itemRow = $("#row_" + moduleName);
-			let setToPublic = itemRow.find(".flagCol1").prop("checked");
-			let setToHidden = itemRow.find(".flagCol2").prop("checked");
-			$.getJSON('<c:url value="<%= BackOfficeController.moduleVisibilityURL %>" />', { module:moduleName,public:setToPublic,hidden:setToHidden }, function(updated){
+			let itemRow = $("#row_" + rowId);
+			let moduleName = itemRow.find("td:eq(0)").text();
+			let setToPublic = itemRow.find(".publicCol").prop("checked");
+			let setToHidden = itemRow.find(".hiddenCol").prop("checked");
+			let bodyJson = { module:moduleName,public:setToPublic,hidden:setToHidden };
+			for (var customFieldKey in editableFields)
+				bodyJson[customFieldKey] = itemRow.find("." + customFieldKey).val();
+			$.getJSON('<c:url value="<%= BackOfficeController.moduleFieldModificationURL %>" />', bodyJson, function(updated){
 				if (!updated)
 					alert("Unable to apply changes for " + moduleName);
 				else
 				{
-					moduleData[moduleName][0] = setToPublic;
-					moduleData[moduleName][1] = setToHidden;
-					setDirty(moduleName, false);
+					moduleData[rowId]['<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>'] = setToPublic;
+					moduleData[rowId]['<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>'] = setToHidden;
+					setDirty(rowId, false);
 				}
 			}).error(function(xhr) { handleError(xhr); });
 		}
 		
-		function resetFlags(moduleName)
+		function resetFlags(rowId)
 		{
-			let itemRow = $("#row_" + moduleName);
-			itemRow.find(".flagCol1").prop("checked", moduleData[moduleName][0]);
-			itemRow.find(".flagCol2").prop("checked", moduleData[moduleName][1]);
-			setDirty(moduleName, false);
+			let itemRow = $("#row_" + rowId);
+			itemRow.find(".publicCol").prop("checked", moduleData[rowId]['<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>']);
+			itemRow.find(".hiddenCol").prop("checked", moduleData[rowId]['<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>']);
+			for (var customFieldKey in editableFields)
+				itemRow.find("." + customFieldKey).val(moduleData[rowId][customFieldKey]);
+			setDirty(rowId, false);
 		}
 		
-		function setDirty(moduleName, flag)
+		function setDirty(rowId, flag)
 		{
-			let itemRow = $("#row_" + moduleName);
-			itemRow.css("background-color", flag ? "#ffff80" : "");
+			let itemRow = $("#row_" + rowId);
+			if (flag)
+				itemRow.addClass("dirtyField");
+			else
+				itemRow.removeClass("dirtyField");
 			itemRow.find(".resetButton").prop("disabled", !flag);
 			itemRow.find(".applyButton").prop("disabled", !flag);
 		}
@@ -129,23 +140,26 @@
 		
 		function buildRow(key)
 		{
-		   	let rowContents = "<td>" + key + "</td>";
+		   	let rowContents = "<td>" + moduleData[key]["id"] + "</td>";
 		   	
 		   	<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
 	   		if (moduleData[key] != null) {
 	   			rowContents += "<td>" + moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_HOST %>'] + "</td>";
-				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='flagCol1' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>'] ? " checked" : "") + "></td>";
-				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='flagCol2' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>'] ? " checked" : "") + "></td>";
+				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='publicCol' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_PUBLIC %>'] ? " checked" : "") + "></td>";
+				rowContents += "<td><input onclick='setDirty(\"" + encodeURIComponent(key) + "\", true);' class='hiddenCol' type='checkbox'" + (moduleData[key]['<%= BackOfficeController.DTO_FIELDNAME_HIDDEN %>'] ? " checked" : "") + "></td>";
 			}
 			</c:if>
 
 			rowContents += "<td>";
 			<c:forEach var="level1Type" items="${rolesByLevel1Type}">
-			rowContents += "<a id='${urlEncoder.urlEncode(moduleName)}_${level1Type.key}PermissionLink' style='text-transform:none;' href=\"javascript:openModuleContentDialog('${loggedUser.username}', '" + key + "', '${level1Type.key}');\">${level1Type.key} entities</a>"
+			rowContents += "<div><a id='${urlEncoder.urlEncode(moduleName)}_${level1Type.key}PermissionLink' style='text-transform:none;' href=\"javascript:openModuleContentDialog('${loggedUser.username}', '" + moduleData[key]["id"] + "', '${level1Type.key}');\">${level1Type.key} entities</a></div>";
 			</c:forEach>
 			rowContents += "</td>";
-			
 			<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
+			for (var customFieldKey in editableFields) {
+				let fNumeric = ['Integer', 'Float', 'Double', 'Byte', 'Long'].indexOf(editableFields[customFieldKey]) != -1;
+				rowContents += "<td><input style='width:" + (fNumeric ? 70 : 160) + "px;' type='" + (fNumeric ? 'number' : 'text') + "' onkeyup='if ($(this).val() != \"" + moduleData[key][customFieldKey] + "\" && !$(this).parent().parent().hasClass(\"dirtyField\")) setDirty(\"" + encodeURIComponent(key) + "\", true);' class='customField " + customFieldKey + "' value=\"" + (moduleData[key][customFieldKey] == null ? "" : moduleData[key][customFieldKey]) + "\"></td>";
+			}
 	   		rowContents += "<td><input type='button' value='Reset' class='resetButton btn btn-default btn-sm' disabled onclick='resetFlags(\"" + encodeURIComponent(key) + "\");'><input type='button' class='applyButton btn btn-default btn-sm' value='Apply' disabled onclick='saveChanges(\"" + encodeURIComponent(key) + "\");'></td>";
 	   		rowContents += "<td align='center'><a style='padding-left:10px; padding-right:10px;' href='javascript:removeItem(\"" + encodeURIComponent(key) + "\");' title='Discard module'><img src='img/delete.gif'></a></td>";
 	   		</c:if>
@@ -201,6 +215,14 @@
 		}
 
 	    $(document).ready(function() {
+			$.getJSON('<c:url value="<%= BackOfficeController.moduleFieldsURL %>" />', {}, function(fields){
+				editableFields = fields;
+				var customFields = "";
+				for (var key in editableFields)
+					customFields += "<th>" + key + "</th>";
+				$("th#changesColumn").before(customFields);
+			}).error(function(xhr) { handleError(xhr); });
+
 	    	resizeIFrame();
 	    	loadData();
 	    });
@@ -229,7 +251,7 @@
 		</c:if>
 		<th>Entity management</th>
 		<c:if test="${fn:contains(loggedUser.authorities, adminRole)}">
-		<th>Changes</th>
+		<th id="changesColumn">Changes</th>
 		<th>Removal</th>
 		</c:if>
 	</tr>

@@ -169,14 +169,14 @@ public class UserPermissionController
 		boolean fIsLoggedUserAdmin = loggedUserAuthorities.contains(new GrantedAuthorityImpl(IRoleDefinition.ROLE_ADMIN));
 		Map<String /*module*/, Map<String /*entity-type*/, Collection<Comparable> /*entity-IDs*/>> managedEntitiesByModuleAndType = userDao.getManagedEntitiesByModuleAndType(loggedUserAuthorities);
 		
-		Collection<String> publicModules = new ArrayList(moduleManager.getModules(true)), publicModulesWithoutOwnedProjects = new ArrayList();
+		Collection<String> publicModules = new ArrayList(moduleManager.getModuleNamesByVisibility(true)), publicModulesWithoutOwnedProjects = new ArrayList();
 		if (!fIsLoggedUserAdmin)
 			for (String sModule : publicModules)	// only show modules containing entities managed by logged user
 				if (managedEntitiesByModuleAndType.get(sModule) == null)
 					publicModulesWithoutOwnedProjects.add(sModule);
 		model.addAttribute("publicModules", CollectionUtils.disjunction(publicModules, publicModulesWithoutOwnedProjects));
 		
-		Collection<String> privateModules = new ArrayList(moduleManager.getModules(false)), privateModulesWithoutOwnedProjects = new ArrayList();
+		Collection<String> privateModules = new ArrayList(moduleManager.getModuleNamesByVisibility(false)), privateModulesWithoutOwnedProjects = new ArrayList();
 		if (!fIsLoggedUserAdmin)
 			for (String sModule : privateModules)	// only show modules containing entities managed by logged user
 				if (managedEntitiesByModuleAndType.get(sModule) == null)
@@ -217,7 +217,7 @@ public class UserPermissionController
 			grantedAuthorityLabels.add(IRoleDefinition.ROLE_ADMIN);
 		else
 		{
-			for (String sModule : moduleManager.getModules(null))
+			for (String sModule : moduleManager.getModuleNamesByVisibility(null))
 			{
 				for (String sEntityType : rolesByLevel1Type.keySet())
 				{

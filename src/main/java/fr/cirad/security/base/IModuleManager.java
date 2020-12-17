@@ -18,6 +18,7 @@ package fr.cirad.security.base;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,9 +33,21 @@ public interface IModuleManager {
 	
 	/**
 	 * @param fTrueForPublicFalseForPrivateNullForBoth
-	 * @return collection of modules (i.e. databases) declared in the system
+	 * @return collection of modules objects (i.e. databases) declared in the system
 	 */
-	Collection<String> getModules(Boolean fTrueForPublicFalseForPrivateNullForBoth);
+	Collection getModulesByVisibility(Boolean fTrueForPublicFalseForPrivateNullForBoth);
+
+	/**
+	 * @param moduleNames
+	 * @return collection of modules objects (i.e. databases) declared in the system
+	 */
+	Collection getModulesByNames(Collection<String> moduleNames);
+	
+	/**
+	 * @param fTrueForPublicFalseForPrivateNullForBoth
+	 * @return collection of modules names (i.e. databases) declared in the system
+	 */
+	Collection<String> getModuleNamesByVisibility(Boolean fTrueForPublicFalseForPrivateNullForBoth);
 	
 	/**
 	 * @param entityType
@@ -61,21 +74,21 @@ public interface IModuleManager {
 	 * @param sModule
 	 * @param fPublic
 	 * @param fHidden
-	 * @param ncbiTaxonIdNameAndSpecies
+	 * @param customFields
 	 * @return whether or not module update succeeded
 	 * @throws Exception
 	 */
-	boolean updateDataSource(String sModule, boolean fPublic, boolean fHidden, String ncbiTaxonIdNameAndSpecies) throws Exception;
+	boolean updateDataSource(String sModule, boolean fPublic, boolean fHidden, Map<String, Object> customFields) throws Exception;
 	
 	/**
 	 * @param sModule
 	 * @param sHost
-	 * @param ncbiTaxonIdNameAndSpecies
+	 * @param customFields
 	 * @param expiryDate
 	 * @return whether or not module creation succeeded
 	 * @throws Exception
 	 */
-	boolean createDataSource(String sModule, String sHost, String ncbiTaxonIdNameAndSpecies, Long expiryDate) throws Exception;
+	boolean createDataSource(String sModule, String sHost, Map<String, Object> customFields, Long expiryDate) throws Exception;
 	
 	/**
 	 * @param sModule
@@ -116,4 +129,9 @@ public interface IModuleManager {
 	 * @return name of the host this module's data is stored on
 	 */
 	String getModuleHost(String sModule);
+
+	/**
+	 * @return module fields that one should be able to edit from the module list
+	 */
+	Map<String, String> getEditableModuleFields();
 }

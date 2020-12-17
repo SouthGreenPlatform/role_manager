@@ -210,7 +210,7 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
             for (GrantedAuthority auth : authorities) {
                 String[] splittedPermission = auth.getAuthority().split(Pattern.quote(UserPermissionController.ROLE_STRING_SEPARATOR));
                 if (splittedPermission.length == 3) {
-                    if (moduleManager.getModules(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && splittedPermission[2].equals(IRoleDefinition.CREATOR_ROLE_SUFFIX)) {
+                    if (moduleManager.getModuleNamesByVisibility(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && splittedPermission[2].equals(IRoleDefinition.CREATOR_ROLE_SUFFIX)) {
                         Collection<String> entityTypes = result.get(splittedPermission[0]);
                         if (entityTypes == null) {
                             entityTypes = new HashSet<>();
@@ -230,7 +230,7 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
             for (GrantedAuthority auth : authorities) {
                 String[] splittedPermission = auth.getAuthority().split(Pattern.quote(UserPermissionController.ROLE_STRING_SEPARATOR));
                 if (splittedPermission.length == 4) {
-                    if (moduleManager.getModules(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && splittedPermission[2].equals(IRoleDefinition.ENTITY_MANAGER_ROLE)) {
+                    if (moduleManager.getModuleNamesByVisibility(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && splittedPermission[2].equals(IRoleDefinition.ENTITY_MANAGER_ROLE)) {
                         Map<String, Collection<Comparable>> entitiesByTypeForModule = result.get(splittedPermission[0]);
                         if (entitiesByTypeForModule == null) {
                             entitiesByTypeForModule = new HashMap<>();
@@ -255,7 +255,7 @@ public class ReloadableInMemoryDaoImpl extends InMemoryDaoImpl {
             for (GrantedAuthority auth : authorities) {
                 String[] splittedPermission = auth.getAuthority().split(Pattern.quote(UserPermissionController.ROLE_STRING_SEPARATOR));
                 if (splittedPermission.length == 4) {
-                    if (moduleManager.getModules(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && UserPermissionController.rolesByLevel1Type.get(splittedPermission[1]).contains(splittedPermission[2])) {
+                    if (moduleManager.getModuleNamesByVisibility(null).contains(splittedPermission[0]) && UserPermissionController.rolesByLevel1Type.keySet().contains(splittedPermission[1]) && UserPermissionController.rolesByLevel1Type.get(splittedPermission[1]).contains(splittedPermission[2])) {
                         Map<String, Map<String, Collection<Comparable>>> rolesByEntityTypeForModule = result.get(splittedPermission[0]);
                         if (rolesByEntityTypeForModule == null) {
                             rolesByEntityTypeForModule = new HashMap<>();
