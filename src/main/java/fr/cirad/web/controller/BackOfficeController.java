@@ -198,9 +198,9 @@ public class BackOfficeController {
 	
 	@RequestMapping(moduleCreationURL)
 	@PreAuthorize("hasRole(IRoleDefinition.ROLE_ADMIN)")
-	protected @ResponseBody boolean createModule(@RequestParam("module") String sModule, @RequestParam("host") String sHost) throws Exception
+	protected @ResponseBody Object createModule(@RequestParam("module") String sModule, @RequestParam("host") String sHost) throws Exception
 	{
-		return moduleManager.createDataSource(sModule, sHost, null, null);
+		return moduleManager.createDataSource(sModule, sHost, false, false, null, null);
 	}
 	
 	@RequestMapping(moduleRemovalURL)

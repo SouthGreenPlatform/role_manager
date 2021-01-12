@@ -83,12 +83,14 @@ public interface IModuleManager {
 	/**
 	 * @param sModule
 	 * @param sHost
+	 * @param fPublic
+	 * @param fHidden
 	 * @param customFields
 	 * @param expiryDate
 	 * @return whether or not module creation succeeded
 	 * @throws Exception
 	 */
-	boolean createDataSource(String sModule, String sHost, Map<String, Object> customFields, Long expiryDate) throws Exception;
+	Object createDataSource(String sModule, String sHost, boolean fPublic, boolean fHidden, Map<String, Object> customFields, Long expiryDate) throws Exception;
 	
 	/**
 	 * @param sModule
