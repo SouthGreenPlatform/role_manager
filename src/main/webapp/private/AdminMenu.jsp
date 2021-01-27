@@ -22,8 +22,8 @@
 <html>
 
 <head>
-	<link type="text/css" rel="stylesheet" href="../css/bootstrap-select.min.css "> 
-	<link type="text/css" rel="stylesheet" href="../css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="css/bootstrap-select.min.css "> 
+	<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel ="stylesheet" type="text/css" href="css/role_manager.css" title="style">
 	<script type="text/javascript" src="js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript">
